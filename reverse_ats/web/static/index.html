@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reverse ATS — Studio CV & Lettre sur-mesure par IA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+
+    /* A4 Page Exact Dimensions for Screen Preview */
+    .a4-sheet {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      color: #0f172a;
+      margin: 0 auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    /* Editable highlight on hover */
+    [contenteditable="true"]:hover {
+      outline: 1px dashed #6366f1;
+      background-color: rgba(99, 102, 241, 0.04);
+      border-radius: 2px;
+    }
+    [contenteditable="true"]:focus {
+      outline: 2px solid #4f46e5;
+      background-color: rgba(99, 102, 241, 0.07);
+      border-radius: 2px;
+    }
+
+    /* Vector Print / PDF Export Styles */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+      html, body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      .a4-sheet {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP NAVIGATION BAR (Hidden in PDF Print) -->
+  <header class="no-print border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center font-extrabold text-white shadow-lg shadow-indigo-500/25">
+          R
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold tracking-tight text-white">Reverse ATS Studio</h1>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              Architecture Modulaire
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Adaptez vos CVs & Lettres de motivation à chaque offre d'emploi gratuitement</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/70">
+        <button onclick="switchTab('profile')" id="tab-btn-profile" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow">
+          1. Mon Profil & CVs
+        </button>
+        <button onclick="switchTab('job')" id="tab-btn-job" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white">
+          2. Offre & Ciblage IA
+        </button>
+        <button onclick="switchTab('result')" id="tab-btn-result" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white">
+          3. Résultat A4 & Export PDF
+        </button>
+      </nav>
+
+      <!-- API Key & Settings Trigger -->
+      <div class="flex items-center gap-2">
+        <button onclick="openSettingsModal()" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          <span id="api-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          <span id="api-status-label">Clés IA (Gratuit)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toast-container" class="no-print fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 print-container">
+
+    <!-- ================================================================== -->
+    <!-- TAB 1: MON PROFIL & MES CVS                                        -->
+    <!-- ================================================================== -->
+    <section id="tab-profile" class="no-print space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Coordinates + Uploaded CVs -->
+        <div class="lg:col-span-5 space-y-6">
+          <!-- Coordinates Card -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <span>👤</span> Coordonnées de base
+              </h2>
+              <button onclick="saveProfile()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition">
+                Sauvegarder
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Nom & Prénom</label>
+                <input id="prof-name" type="text" placeholder="Ex: Alexandre Martin" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Titre principal</label>
+                <input id="prof-title" type="text" placeholder="Ex: Ingénieur Logiciel Fullstack" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Email</label>
+                <input id="prof-email" type="email" placeholder="alexandre@email.com" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Téléphone</label>
+                <input id="prof-phone" type="text" placeholder="+33 6 12 34 56 78" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs text-slate-400 mb-1">Ville / Mobilité</label>
+                <input id="prof-location" type="text" placeholder="Paris, France (Télétravail / Hybride)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs text-slate-400 mb-1">Liens (GitHub, LinkedIn, Portfolio — séparés par une virgule)</label>
+                <input id="prof-links" type="text" placeholder="github.com/monprofil, linkedin.com/in/monprofil" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+            </div>
+          </div>
+
+          <!-- CV Upload Card -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <span>📄</span> Mes CVs existants (Multi-CV supporté)
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Chargez un ou plusieurs CVs (.pdf, .docx, .txt, .md). Le texte est extrait automatiquement pour nourrir l'IA.
+              </p>
+            </div>
+
+            <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-5 cursor-pointer bg-slate-800/40 hover:bg-slate-800/80 transition">
+              <span class="text-2xl mb-1">📥</span>
+              <span class="text-sm font-medium text-slate-200">Cliquez pour importer un CV (PDF, DOCX, TXT, MD)</span>
+              <span class="text-xs text-slate-400 mt-1">Vous pouvez ajouter plusieurs versions de vos CVs</span>
+              <input id="cv-file-input" type="file" accept=".pdf,.docx,.txt,.md" class="hidden" onchange="handleCVUpload(event)" />
+            </label>
+
+            <div id="uploaded-cvs-list" class="space-y-2.5 max-h-80 overflow-y-auto">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Detailed Master Bio -->
+        <div class="lg:col-span-7">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl h-full flex flex-col justify-between space-y-4">
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 class="text-base font-bold text-white flex items-center gap-2">
+                    <span>🧠</span> Ma Bio Détaillée ("Master Profile" / Brain Dump)
+                  </h2>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    Racontez tout en détail ici : vos projets scolaires/persos, vos stacks techniques, vos missions détaillées, vos chiffres clés, vos soft skills. L'IA piochera les éléments les plus pertinents pour chaque offre !
+                  </p>
+                </div>
+                <button onclick="saveProfile()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 transition">
+                  💾 Enregistrer mon profil complet
+                </button>
+              </div>
+
+              <textarea
+                id="prof-bio"
+                rows="19"
+                placeholder="Exemple de ce que vous pouvez écrire en vrac ici :
+- Mes compétences principales : Python (FastAPI, Django, scripts d'automatisation), JavaScript/TypeScript, Docker, Linux, Git, SQL.
+- Projet 1 (CnamSign) : Automatisation de signature de présence par surveillance d'emails IMAP + Playwright et notifications, conteneurisé avec Docker.
+- Projet 2 : ...
+- Expérience chez X : ce que j'ai vraiment fait au quotidien, les problèmes résolus, l'équipe, la méthodologie Agile...
+- Ce que je recherche : Stage / Alternance / CDI, mes points forts, ma capacité d'apprentissage rapide..."
+                class="w-full p-4 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-slate-100 leading-relaxed focus:outline-none focus:border-indigo-500"
+              ></textarea>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-xs text-slate-400">
+              <span>Astuce : Plus cette bio est riche en détails techniques et anecdotes, meilleur sera le ciblage ATS.</span>
+              <button onclick="saveProfileAndNext()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition">
+                Passer à l'offre d'emploi →
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- TAB 2: OFFRE D'EMPLOI & PARAMÈTRES DE GÉNÉRATION                   -->
+    <!-- ================================================================== -->
+    <section id="tab-job" class="no-print hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Job Offer URL & Text -->
+        <div class="lg:col-span-8 space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <span>🎯</span> Offre d'emploi cible (Lien URL ou Texte)
+            </h2>
+
+            <!-- URL Scraper Bar -->
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input
+                id="job-url-input"
+                type="url"
+                placeholder="Collez le lien de l'offre (Welcome to the Jungle, Indeed, APEC, site carrière...)"
+                class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500"
+              />
+              <button
+                onclick="scrapeJobUrl()"
+                id="btn-scrape-url"
+                class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-semibold text-indigo-300 transition whitespace-nowrap"
+              >
+                🔍 Extraire le texte du lien
+              </button>
+            </div>
+
+            <!-- Job Raw Textarea -->
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">
+                Texte complet de l'offre d'emploi (vous pouvez aussi le coller directement ici) :
+              </label>
+              <textarea
+                id="job-text-input"
+                rows="14"
+                placeholder="Collez ici la description du poste, le profil recherché, les technologies demandées et la présentation de l'entreprise..."
+                class="w-full p-4 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-slate-100 leading-relaxed focus:outline-none focus:border-indigo-500"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: AI Engine & Tailoring Options -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <span>⚡</span> Moteur IA & Options Reverse ATS
+            </h2>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Fournisseur d'IA (Plugin)</label>
+              <select id="select-provider" onchange="onProviderChange()" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Modèle IA</label>
+              <select id="select-model" class="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Langue de sortie</label>
+                <select id="select-language" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white">
+                  <option value="Français">Français</option>
+                  <option value="Anglais (English)">Anglais (English)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Ton & Style</label>
+                <select id="select-tone" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white">
+                  <option value="Professionnel, Impactant & Orienté Résultats">Impactant & Pro</option>
+                  <option value="Tech / Startup Moderne & Direct">Startup / Tech</option>
+                  <option value="Corporate / Grand Groupe Formel">Grand Groupe Formel</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Instructions spécifiques (optionnel)</label>
+              <textarea
+                id="job-custom-instructions"
+                rows="3"
+                placeholder="Ex: Mets particulièrement en valeur mon projet Python/Docker et précise que je suis disponible dès septembre."
+                class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500"
+              ></textarea>
+            </div>
+
+            <button
+              onclick="generateApplication()"
+              id="btn-generate"
+              class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 transition flex items-center justify-center gap-2"
+            >
+              <span>🚀</span> Générer le CV & la Lettre sur-mesure
+            </button>
+
+            <div class="pt-3 border-t border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">Historique des candidatures</span>
+              </div>
+              <div id="history-list" class="space-y-1.5 max-h-44 overflow-y-auto text-xs">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- TAB 3: RÉSULTAT ATS, ÉDITION DIRECTE A4 & EXPORT PDF               -->
+    <!-- ================================================================== -->
+    <section id="tab-result" class="hidden space-y-6">
+
+      <!-- Control Bar & ATS Score Dashboard (Hidden when printing to PDF) -->
+      <div class="no-print bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <!-- Document Switcher (CV vs Cover Letter) -->
+          <div class="flex items-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
+            <button onclick="switchDocView('cv')" id="doc-btn-cv" class="px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white transition">
+              📄 CV Optimisé A4
+            </button>
+            <button onclick="switchDocView('letter')" id="doc-btn-letter" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition">
+              ✉️ Lettre de Motivation A4
+            </button>
+          </div>
+
+          <!-- Template Switcher for CV -->
+          <div id="template-selector-bar" class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">Design du CV :</span>
+            <select id="cv-template-select" onchange="renderDocuments()" class="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-semibold text-white">
+              <option value="modern_sidebar">Moderne 2 Colonnes (Sidebar Indigo)</option>
+              <option value="executive_ats">Classique 1 Colonne (100% ATS Pur)</option>
+            </select>
+          </div>
+
+          <!-- Export PDF Button -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 hidden sm:inline">💡 Astuce : Cliquez sur n'importe quel texte de la feuille A4 pour le modifier</span>
+            <button
+              onclick="window.print()"
+              class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition flex items-center gap-2"
+            >
+              <span>🖨️</span> Télécharger / Exporter en PDF (A4)
+            </button>
+          </div>
+        </div>
+
+        <!-- ATS Score & Keywords Breakdown -->
+        <div id="ats-analysis-banner" class="grid grid-cols-1 md:grid-cols-12 gap-4 pt-3 border-t border-slate-800">
+          <div class="md:col-span-3 bg-slate-800/70 rounded-xl p-4 border border-slate-700/70 flex items-center gap-4">
+            <div id="ats-score-badge" class="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex flex-col items-center justify-center text-emerald-300">
+              <span id="ats-score-val" class="text-2xl font-extrabold">--%</span>
+              <span class="text-[10px] uppercase tracking-wider">Score ATS</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-white">Analyse Reverse ATS</h3>
+              <p id="ats-provider-badge" class="text-xs text-slate-400 mt-0.5">Prêt</p>
+            </div>
+          </div>
+
+          <div class="md:col-span-5 bg-slate-800/70 rounded-xl p-4 border border-slate-700/70">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">
+              ✅ Mots-clés ATS de l'offre intégrés dans le CV
+            </h4>
+            <div id="ats-matched-keywords" class="flex flex-wrap gap-1.5">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="md:col-span-4 bg-slate-800/70 rounded-xl p-4 border border-slate-700/70">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-2">
+              🎯 Stratégie d'adaptation appliquée
+            </h4>
+            <ul id="ats-strategy-list" class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Optional Fallback Prompt Box (Only shown in Zero-API mode) -->
+        <div id="fallback-prompt-box" class="hidden bg-indigo-950/50 border border-indigo-500/40 rounded-xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h4 class="text-xs font-bold text-indigo-300 uppercase">Mode Sans Clé API — Prompt Complet & Import JSON</h4>
+              <p class="text-xs text-slate-300">
+                Vous pouvez copier ce prompt dans ChatGPT/Claude/Gemini Web gratuit, puis coller le JSON obtenu à droite pour mettre à jour instantanément le CV A4 !
+              </p>
+            </div>
+            <button onclick="copyFallbackPrompt()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white">
+              📋 Copier le Prompt Complet
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <textarea id="fallback-prompt-textarea" readonly rows="4" class="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-300 font-mono"></textarea>
+            <div class="flex flex-col gap-2">
+              <textarea id="manual-json-input" rows="2" placeholder="Collez ici la réponse JSON de ChatGPT/Claude..." class="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 font-mono"></textarea>
+              <button onclick="importManualJson()" class="py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white">
+                📥 Importer le JSON dans l'aperçu A4
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- A4 PREVIEW CONTAINER (CV OR COVER LETTER)                      -->
+      <!-- ============================================================== -->
+      <div class="overflow-x-auto pb-12 print-container">
+        <!-- CV SHEET -->
+        <div id="a4-cv-sheet" class="a4-sheet">
+          <!-- Dynamically rendered by JS according to selected template -->
+        </div>
+
+        <!-- COVER LETTER SHEET -->
+        <div id="a4-letter-sheet" class="a4-sheet hidden p-[20mm]">
+          <!-- Dynamically rendered by JS -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================================================================== -->
+  <!-- MODAL: CLÉS API GRATUITES & PARAMÈTRES                             -->
+  <!-- ================================================================== -->
+  <div id="settings-modal" class="no-print fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white">🔑 Configuration des Clés IA Gratuites</h3>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <!-- Step-by-step Free Gemini Guide -->
+      <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-4 space-y-2 text-xs">
+        <div class="font-bold text-indigo-300 flex items-center gap-1.5">
+          <span>✨</span> Comment obtenir votre clé Google Gemini 100% Gratuite (sans CB) :
+        </div>
+        <ol class="list-decimal list-inside text-slate-300 space-y-1">
+          <li>Ouvrez <a href="https://aistudio.google.com/apikey" target="_blank" class="text-indigo-400 underline font-semibold">aistudio.google.com/apikey</a> avec votre compte Google.</li>
+          <li>Cliquez sur le bouton bleu <strong>"Create API Key"</strong>.</li>
+          <li>Copiez la clé qui commence par <code>AIza...</code> et collez-la ci-dessous !</li>
+        </ol>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Clé API Google Gemini (AI Studio) <span id="gemini-saved-badge" class="ml-2 text-emerald-400"></span>
+          </label>
+          <input
+            id="input-gemini-key"
+            type="password"
+            placeholder="AIzaSy..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Clé API Groq Cloud (Optionnel — gratuit sur console.groq.com) <span id="groq-saved-badge" class="ml-2 text-emerald-400"></span>
+          </label>
+          <input
+            id="input-groq-key"
+            type="password"
+            placeholder="gsk_..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            URL Ollama Local (si vous utilisez Ollama sur votre PC)
+          </label>
+          <input
+            id="input-ollama-url"
+            type="text"
+            value="http://localhost:11434"
+            class="w-full px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">
+          Annuler
+        </button>
+        <button onclick="saveApiSettings()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-lg shadow-indigo-600/30">
+          Enregistrer les clés
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
