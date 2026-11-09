@@ -1,0 +1,18 @@
+# Environnement virtuel Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Configuration privée & clés API
+.env
+
+# Données personnelles locales (Profil, CVs, Clés sauvegardées, Historique)
+data/
+
+# Fichiers système / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
