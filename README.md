@@ -140,3 +140,12 @@ C:\DEV\ReverseATS\
   Créez une classe héritant de `DocumentParserPlugin` et enregistrez-la dans [`reverse_ats/parsers/__init__.py`](file:///C:/DEV/ReverseATS/reverse_ats/parsers/__init__.py).
 - **Remplacer le stockage JSON par une base SQLite ou PostgreSQL** :
   Créez une classe héritant de `StorageBackendPlugin` dans [`reverse_ats/storage/__init__.py`](file:///C:/DEV/ReverseATS/reverse_ats/storage/__init__.py) et passez-la à `ReverseATSService` dans [`main.py`](file:///C:/DEV/ReverseATS/main.py).
+
+---
+
+## 🔒 Licence & Droits d'auteur
+
+**Copyright © 2026 [ndh51](https://github.com/ndh51) — Tous droits réservés.**
+
+Ce projet est **propriétaire** et **n'est pas Open Source**. Toute copie, modification, redistribution ou utilisation commerciale sans l'autorisation écrite de l'auteur est strictement interdite. Voir le fichier [LICENSE](./LICENSE) pour plus de détails.
+
