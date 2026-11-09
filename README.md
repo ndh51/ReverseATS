@@ -1,151 +1,107 @@
-# 🎯 Reverse ATS Studio — Générateur Modulaire de CV & Lettre de Motivation sur-mesure par IA
+# Reverse ATS
 
-**Reverse ATS Studio** est une application web locale permettant d'inverser la logique des **ATS** (*Applicant Tracking Systems* — les robots de tri de candidatures utilisés par les recruteurs).
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![License](https://img.shields.io/badge/Licence-Propri%C3%A9taire-red?style=flat-square)
 
-À partir de **vos CVs existants**, de votre **Biographie détaillée ("Master Profile")** et d'une **offre d'emploi cible** (via son **lien URL** ou son **texte**), l'application analyse les mots-clés attendus par le recruteur et génère automatiquement :
-1. Un **Score de correspondance ATS** avec la liste des mots-clés intégrés et l'explication de la stratégie d'adaptation.
-2. Un **CV sur-mesure d'une page A4** (avec 2 designs au choix : *Moderne 2 colonnes* ou *Classique 1 colonne 100% ATS*), **éditable en direct** au clic.
-3. Une **Lettre de Motivation sur-mesure A4**, également éditable en direct.
-4. Un **Export PDF vectoriel propre** (avec vrai texte sélectionnable pour être lu à 100% par les robots ATS).
+Interface web locale pour adapter automatiquement un CV et une lettre de motivation à une offre d'emploi cible.
 
-> **Règle d'or de l'IA intégrée :** Le moteur ne **s'invente jamais** de fausses expériences ou de faux diplômes. Il puise exclusivement dans vos vrais projets et compétences (présents dans vos CVs et votre Master Bio) pour les reformuler, les réordonner et les aligner sur le vocabulaire exact de l'offre d'emploi.
+L'application analyse les mots-clés attendus par les logiciels de tri de candidatures (ATS) et génère des documents sur-mesure au format A4 à partir des compétences, projets et expériences réels enregistrés dans le profil utilisateur.
 
----
+## Fonctionnalités principales
 
-## 🚀 Comment lancer le projet
+- **Gestion multi-CV** : import de un ou plusieurs CVs existants (`.pdf`, `.docx`, `.txt`, `.md`) avec extraction automatique du texte.
+- **Profil détaillé (Master Bio)** : espace de saisie libre pour décrire l'ensemble de son parcours, ses projets techniques et ses réalisations. Les données sont sauvegardées localement.
+- **Analyse d'offre d'emploi** : récupération automatique du texte d'une annonce depuis un lien web (URL) ou par simple copier-coller.
+- **Génération sur-mesure** : création d'un CV d'une page et d'une lettre de motivation adaptés au poste visé, accompagnés d'un score de correspondance et des mots-clés retenus.
+- **Édition directe et export PDF** : aperçu au format A4 (modèle 2 colonnes ou modèle 1 colonne classique) modifiable directement au clic avant export en PDF vectoriel.
 
-### 1. Démarrage rapide (PowerShell sous Windows)
+## Installation et lancement
 
-Si l'environnement virtuel `.venv` est déjà créé (ce qui est le cas dans `C:\DEV\ReverseATS`) :
+### Prérequis
 
-```powershell
-cd C:\DEV\ReverseATS
-.\.venv\Scripts\python.exe main.py
+- Python 3.11 ou supérieur
+- Git
+
+### 1. Récupérer le projet
+
+```bash
+git clone https://github.com/ndh51/ReverseATS.git
+cd ReverseATS
 ```
 
-Puis ouvrez votre navigateur sur : **[http://localhost:8080](http://localhost:8080)**
+### 2. Créer l'environnement virtuel et installer les dépendances
 
----
-
-### 2. Installation complète depuis zéro (si vous clonez le projet ailleurs)
+**Sous Windows (PowerShell) :**
 
 ```powershell
-cd C:\DEV\ReverseATS
-
-# 1. Créer l'environnement virtuel Python
 python -m venv .venv
-
-# 2. Activer l'environnement virtuel
 .\.venv\Scripts\Activate.ps1
-
-# 3. Installer les dépendances
 pip install -r requirements.txt
+```
 
-# 4. Lancer le serveur web
+**Sous Linux / macOS :**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 3. Démarrer le serveur
+
+```bash
 python main.py
 ```
 
-*(Par défaut, le serveur écoute sur le port `8080`. Vous pouvez changer le port via la variable d'environnement `PORT=8090` dans un fichier `.env`.)*
+L'interface est ensuite accessible dans le navigateur à l'adresse `http://localhost:8080`.
+Pour utiliser un autre port, créez un fichier `.env` à partir de `.env.example` et modifiez la variable `PORT`.
 
----
+## Configuration des moteurs d'IA
 
-## 🔑 Comment configurer l'IA gratuitement (4 solutions incluses)
+L'application fonctionne avec plusieurs fournisseurs d'IA configurables directement depuis le bouton **Clés IA** en haut à droite de l'interface :
 
-Cliquez sur le bouton **"Clés IA (Gratuit)"** en haut à droite de l'interface web (`http://localhost:8080`) pour configurer le moteur de votre choix :
+1. **Google Gemini (Google AI Studio)**
+   - Créez une clé gratuite sur [aistudio.google.com/apikey](https://aistudio.google.com/apikey) (assurez-vous que le projet associé est sur le niveau de facturation *Gratuit / Free tier*).
+   - Modèles disponibles : `gemini-3.8-flash`, `gemini-4-argon`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemma-4-31b-it`, `gemma-4-26b-a4b-it`.
+2. **Groq Cloud**
+   - Créez une clé gratuite sur [console.groq.com/keys](https://console.groq.com/keys).
+   - Modèles disponibles : `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`.
+3. **Ollama (100% local et hors-ligne)**
+   - Nécessite [Ollama](https://ollama.com/) installé sur la machine (`http://localhost:11434`).
+   - Permet d'utiliser des modèles locaux sans clé API ni connexion internet.
+4. **Mode sans clé API**
+   - Génère le prompt complet prêt à être copié dans n'importe quel chat web (ChatGPT, Claude, Gemini).
+   - Permet ensuite de coller la réponse JSON obtenue pour mettre en page le CV et la lettre en un clic.
 
-### Option 1 : Google Gemini API (via Google AI Studio)
-- Rendez-vous sur [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
-- Créez une clé API sur un projet dont le niveau de facturation est **"Gratuit" (Free Tier)**.
-  - *Attention :* Si votre compte Google principal possède déjà un portefeuille prépayé Google Cloud à `0 €` (affiché *"Niveau 1 / Tier 1"*), Google renverra une erreur `402 Prepayment credits depleted`. Dans ce cas, créez la clé avec un compte Gmail secondaire sans facturation Cloud pour bénéficier du **Free Tier** gratuit, ou utilisez **Groq Cloud** ci-dessous !
-- **Modèles inclus :**
-  - `gemini-3.8-flash` *(Recommandé — rapide, 1M tokens)*
-  - `gemini-4-argon` *(Modèle Pro — raisonnement approfondi)*
-  - `gemini-3.5-flash-lite` & `gemini-3.1-flash-lite` *(Ultra-rapides, quotas élevés)*
-  - `gemma-4-31b-it` & `gemma-4-26b-a4b-it` *(Modèles Open-Weights Google)*
+## Utilisation
 
-### Option 2 : Groq Cloud API (100% Gratuit, sans carte bancaire, ultra-rapide)
-- Rendez-vous sur [console.groq.com/keys](https://console.groq.com/keys) (connexion en 1 clic avec Google).
-- Créez une clé gratuite (`gsk_...`) et collez-la dans le champ **Clé API Groq Cloud** de l'interface.
-- Sélectionnez **"Groq Cloud (Gratuit — Llama 3.3 70B)"** : génération complète en moins de 2 secondes.
+1. **Mon Profil & CVs** : renseignez vos coordonnées, importez vos CVs actuels et complétez votre biographie détaillée. Cliquez sur *Enregistrer mon profil complet*.
+2. **Offre & Ciblage IA** : collez le lien ou le texte de l'offre d'emploi, choisissez le moteur d'IA, la langue et le ton, puis lancez la génération.
+3. **Résultat A4 & Export PDF** : consultez l'analyse des mots-clés, choisissez le modèle visuel du CV, cliquez directement sur le texte de la feuille A4 si vous souhaitez ajuster une phrase, puis cliquez sur *Télécharger / Exporter en PDF (A4)*.
 
-### Option 3 : Ollama Local (100% Hors-ligne sur votre PC)
-- Si [Ollama](https://ollama.com/) tourne sur votre machine (`http://localhost:11434`), sélectionnez **"Ollama Local"** pour utiliser vos modèles locaux (`qwen2.5:14b`, `llama3.2`, `mistral`) sans aucune connexion internet ni clé API.
+## Structure du projet
 
-### Option 4 : Mode "Sans Clé API" (Générateur de Prompt + Import JSON)
-- Si vous n'avez aucune clé API mais que vous avez un abonnement web (ex: **Gemini Advanced / Pro Web**, **ChatGPT Plus**, **Claude**), choisissez **"Mode Sans Clé API"**.
-- L'application génère le **Prompt structuré complet** contenant votre profil, vos CVs, l'offre d'emploi et le schéma JSON attendu.
-- Copiez ce prompt dans votre chat web habituel, puis collez la réponse JSON obtenue dans la case **"Importer le JSON"** : votre CV A4 et votre Lettre de Motivation A4 se mettent en page instantanément !
-
----
-
-## 📖 Guide d'utilisation étape par étape
-
-1. **Onglet `1. Mon Profil & CVs` (À faire une seule fois)**
-   - Renseignez vos coordonnées (Nom, Titre, Email, Téléphone, Ville, Liens GitHub/LinkedIn).
-   - **Importez un ou plusieurs CVs** (`.pdf`, `.docx`, `.txt`, `.md`). Le texte de chaque CV est extrait automatiquement et conservé.
-   - **Remplissez votre "Master Bio"** : décrivez en détail tous vos projets scolaires, personnels et professionnels, vos stacks techniques, vos résultats chiffrés et ce que vous recherchez. Cliquez sur **Enregistrer mon profil complet**.
-2. **Onglet `2. Offre & Ciblage IA` (Pour chaque candidature)**
-   - Collez le **lien URL de l'offre** et cliquez sur **"🔍 Extraire le texte du lien"** (ou collez directement le texte de l'offre).
-   - Choisissez le fournisseur IA, le modèle, la langue (*Français* ou *Anglais*) et le ton souhaité.
-   - Ajoutez éventuellement une instruction spécifique (ex: *"Mets en avant mon expérience Docker et Python"*).
-   - Cliquez sur **"🚀 Générer le CV & la Lettre sur-mesure"**.
-3. **Onglet `3. Résultat A4 & Export PDF`**
-   - Consultez votre **Score ATS**, les mots-clés intégrés et les choix stratégiques effectués.
-   - Basculez entre le **CV Optimisé A4** (2 designs au choix : *Moderne 2 Colonnes* ou *Classique 1 Colonne ATS*) et la **Lettre de Motivation A4**.
-   - **Édition directe :** Cliquez sur n'importe quel titre, puce ou paragraphe directement sur la feuille A4 pour retoucher un mot à la volée.
-   - Cliquez sur **"🖨️ Télécharger / Exporter en PDF (A4)"** et choisissez **"Enregistrer au format PDF"** (pensez à cocher *"Graphiques d'arrière-plan"* dans les options d'impression du navigateur pour conserver les couleurs de la colonne latérale).
-
----
-
-## 🧩 Architecture Modulaire & Interpluggable (`reverse_ats/`)
-
-Le code a été conçu selon une architecture **Hexagonale / Ports & Adapters** stricte. Chaque package est indépendant et ne dépend que des contrats abstraits définis dans [`reverse_ats/core/__init__.py`](file:///C:/DEV/ReverseATS/reverse_ats/core/__init__.py) :
+Le code est découpé en modules indépendants dans le dossier `reverse_ats/` afin de faciliter l'ajout ou le remplacement d'un composant :
 
 ```text
-C:\DEV\ReverseATS\
-├── main.py                             # Point d'entrée & Injection de dépendances (Wiring)
-├── requirements.txt                    # Dépendances Python
-├── .env.example                        # Modèle de variables d'environnement
-├── data/                               # Données persistées localement (non écrasées au redémarrage)
-│   ├── profile.json                    # Coordonnées + Master Bio + CVs extraits
-│   ├── settings.json                   # Clés API et préférences sauvegardées
-│   └── history/                        # Historique complet de toutes les candidatures générées
+ReverseATS/
+├── main.py                         # Point d'entrée du serveur web
+├── requirements.txt                # Dépendances Python
+├── .env.example                    # Exemple de configuration
 └── reverse_ats/
-    ├── core/
-    │   └── __init__.py                 # Modèles Pydantic (DTOs) & Interfaces Abstraites (ABC Ports)
-    ├── parsers/
-    │   └── __init__.py                 # Plugins d'extraction de CV (PDF, DOCX, TXT/MD) + ParserRegistry
-    ├── scrapers/
-    │   └── __init__.py                 # Plugins d'extraction d'offres web (HTTP BS4 + Jina Fallback) + ScraperRegistry
-    ├── providers/
-    │   ├── __init__.py                 # ProviderRegistry (Factory des moteurs IA)
-    │   ├── prompts.py                  # Prompt système Reverse ATS & Schéma JSON centralisés
-    │   ├── gemini_provider.py          # Plugin officiel Google Gemini (`google-genai` SDK)
-    │   └── other_providers.py          # Plugins Groq Cloud, Ollama Local et Mode Sans Clé API
-    ├── storage/
-    │   └── __init__.py                 # Plugin de stockage (`JsonFileStoragePlugin`)
-    ├── services/
-    │   └── __init__.py                 # Orchestrateur métier découplé (`ReverseATSService`)
-    ├── api/
-    │   └── __init__.py                 # Contrôleurs REST FastAPI (`/api/*`)
-    └── web/static/
-        ├── index.html                  # Interface utilisateur & Feuilles A4 CSS Print
-        └── app.js                      # Logique frontend, édition directe & templates de CV
+    ├── core/                       # Modèles de données et interfaces des plugins
+    ├── parsers/                    # Lecture des fichiers CV (PDF, Word, Texte)
+    ├── scrapers/                   # Extraction des offres d'emploi depuis une URL
+    ├── providers/                  # Connecteurs IA (Gemini, Groq, Ollama, Mode manuel)
+    ├── storage/                    # Sauvegarde locale du profil et de l'historique
+    ├── services/                   # Logique applicative
+    ├── api/                        # Routes HTTP FastAPI
+    └── web/static/                 # Interface utilisateur et feuilles de style A4
 ```
 
-### Comment faire évoluer ou remplacer un module demain ?
-- **Ajouter un nouveau fournisseur IA (ex: Mistral, OpenAI, Anthropic)** :
-  Créez une classe héritant de `LLMProviderPlugin` dans `reverse_ats/providers/` et enregistrez-la avec `registry.register(...)` dans [`reverse_ats/providers/__init__.py`](file:///C:/DEV/ReverseATS/reverse_ats/providers/__init__.py). Elle apparaîtra automatiquement dans l'interface web !
-- **Ajouter un nouveau format de fichier CV (ex: `.odt`, `.rtf`)** :
-  Créez une classe héritant de `DocumentParserPlugin` et enregistrez-la dans [`reverse_ats/parsers/__init__.py`](file:///C:/DEV/ReverseATS/reverse_ats/parsers/__init__.py).
-- **Remplacer le stockage JSON par une base SQLite ou PostgreSQL** :
-  Créez une classe héritant de `StorageBackendPlugin` dans [`reverse_ats/storage/__init__.py`](file:///C:/DEV/ReverseATS/reverse_ats/storage/__init__.py) et passez-la à `ReverseATSService` dans [`main.py`](file:///C:/DEV/ReverseATS/main.py).
+## Licence
 
----
+Copyright (c) 2026 [ndh51](https://github.com/ndh51). Tous droits réservés.
 
-## 🔒 Licence & Droits d'auteur
-
-**Copyright © 2026 [ndh51](https://github.com/ndh51) — Tous droits réservés.**
-
-Ce projet est **propriétaire** et **n'est pas Open Source**. Toute copie, modification, redistribution ou utilisation commerciale sans l'autorisation écrite de l'auteur est strictement interdite. Voir le fichier [LICENSE](./LICENSE) pour plus de détails.
-
+Ce logiciel est propriétaire et n'est pas Open Source. Toute copie, modification, distribution ou utilisation non autorisée est interdite. Consultez le fichier [LICENSE](./LICENSE) pour les conditions complètes.
